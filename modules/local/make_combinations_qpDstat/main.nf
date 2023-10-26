@@ -7,7 +7,7 @@ process MAKE_COMBINATIONS {
     file poplistFile
     
     output:
-    tuple val(meta), path("*combinations.txt"),   emit: txt
+    tuple val(meta), path("*ftest.txt"),   emit: txt
 
     when:
     task.ext.when == null || task.ext.when
@@ -23,12 +23,12 @@ process MAKE_COMBINATIONS {
     export D=$(echo "$popD")
 
     for i in ${C}; do 
-        for j in $D; do
+        for j in ${D}; do
             if [ "$i" != "$j" ]; then
             echo -e "$A\t$B\t$i\t$j"
             fi
         done < 
-    done > ${prefix}.combinations.txt
+    done > ${prefix}.ftest.txt
 
     """
 }
