@@ -6,7 +6,7 @@ process MAKE_PAR_qpDstat {
     tuple val(meta), path(geno)
     tuple val(meta), path(snp)
     tuple val(meta), path(ind)
-    tuple val(meta), path(combinations)
+    path(combinations)
     
 
     output:
@@ -19,7 +19,7 @@ process MAKE_PAR_qpDstat {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     
-    def f4 = task.ext.f4mode ?: 'YES'
+    def f4 = task.ext.f4mode
 
     """
     echo "genotypename: $geno" > ${prefix}.parfile

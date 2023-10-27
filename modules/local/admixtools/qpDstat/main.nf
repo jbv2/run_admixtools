@@ -1,13 +1,18 @@
-process qpDstat {
+process ADMIXTOOLS_qpDstat {
     tag "$meta.id"
     label 'process_high_memory'
 
     input:
+    tuple val(meta), path(geno)
+    tuple val(meta), path(snp)
+    tuple val(meta), path(ind)
     tuple val(meta), path(parfile)
+    path(combinations)
 
 
     output:
-    tuple val(meta), path("*.OUT.log"),   emit: parfile
+    tuple val(meta), path("*.OUT.log"),   emit: log
+    path "versions.yml"               ,   emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -16,14 +21,19 @@ process qpDstat {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     
-    def f4 = task.ext.f4mode ?: 'YES'
+    def f4 = task.ext.f4mode
 
     """
     # Conditionally set poplistname based on f4mode
-    if [ "$f4" == 'YES' ]; then
-    $(which qpDstat) -p ./parfile > f4.test.OUT.log
+    if [ '$f4' == 'YES' ]; then
+    qpDstat -p $parfile > ${prefix}.f4.test.OUT.log
     else 
-    $(which qpDstat) -p ./parfile > D.test.OUT.log
+    qpDstat -p $parfile > ${prefix}.D.test.OUT.log
     fi
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qpDstat: \$(echo \$(qpDstat -V 2>&1) | sed 's/no parameters ## qpDstat version: //')
+    END_VERSIONS
     """
 }

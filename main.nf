@@ -32,8 +32,8 @@ nextflow.enable.dsl = 2
 
 // TODO rename to active: index_reference, filter_bam etc.
 include { VCF2ADMIXTOOLS   } from './subworkflows/local/vcf2admixtools'
-include { PLINK2ADMIXTOOLS } from './subworkflows/local/plink2admixtools'
-include { EIGEN2ADMIXTOOLS } from './subworkflows/local/eigen2admixtools'
+//include { PLINK2ADMIXTOOLS } from './subworkflows/local/plink2admixtools'
+//include { EIGEN2ADMIXTOOLS } from './subworkflows/local/eigen2admixtools'
 
 
 /*
@@ -54,14 +54,21 @@ include { EIGEN2ADMIXTOOLS } from './subworkflows/local/eigen2admixtools'
 
 
 workflow {
+    ch_versions       = Channel.empty()
 
-    // Reading poplist according option lsqproject
-    if ( params.poplist ) {
-      ch_poplist = Channel.fromPath(params.poplist, checkIfExists: true )
-        .collect()
+    // Reading poplist
+    if ( params.run_qpDstat ) {
+    // Define a list of input parameters
+    inputParams = [params.popA, params.popB, params.popC, params.popD]
+
+    // Filter out non-empty parameters
+    validInputs = inputParams.findAll { it }
+
+    // Create a channel from the valid input strings
+    ch_pops = Channel.fromList(validInputs).collect()
 
     } else {
-      ch_poplist = []
+      ch_pops = []
     }
 
     // Read inputs (VCF) and define name as ID
@@ -81,42 +88,7 @@ workflow {
         .fromPath(params.samples)
         .set { ch_samples }
 
-    VCF2SMARTPCA(ch_vcf, ch_samples, ch_poplist)
-    } else if (params.input_type == 'plink' ) {
-
-    // Read inputs (PLINK) and define name as ID
-   ch_bed = Channel.fromFilePairs(params.inputbed, size: -1)
-    .map {
-        meta, bed ->
-        def baseName = bed.baseName.first()
-        def dirPath = bed.parent.first()
-        def bimPath = "${dirPath}/${baseName}.bim"
-        def famPath = "${dirPath}/${baseName}.fam"
-        def fmeta = [:]
-        // Set meta.id
-        fmeta.id = baseName
-        [fmeta, bed, file(bimPath), file(famPath)]
-    }
-
-    PLINK2SMARTPCA(ch_bed, ch_poplist)
-
-    } else if (params.input_type == 'eigenstrat' ) {
-
-    // Read inputs (EIGENSTRAT) and define name as ID
-   ch_geno = Channel.fromFilePairs(params.inputgeno, size: -1)
-    .map {
-        meta, geno ->
-        def baseName = geno.baseName.first()
-        def dirPath = geno.parent.first()
-        def snpPath = "${dirPath}/${baseName}.snp"
-        def indPath = "${dirPath}/${baseName}.ind"
-        def fmeta = [:]
-        // Set meta.id
-        fmeta.id = baseName
-        [fmeta, geno, file(snpPath), file(indPath)]
-    }
-
-    EIGEN2SMARTPCA(ch_geno, ch_poplist)
-
+    VCF2ADMIXTOOLS(ch_vcf, ch_samples, ch_pops)
+    
     }
 }
