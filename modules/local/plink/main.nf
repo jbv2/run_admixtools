@@ -22,7 +22,6 @@ process PLINK {
         --keep-allele-order \
         $args \
         --make-bed \
-        --memory 51498 \
         --out ${prefix} 
 
     cat <<-END_VERSIONS > versions.yml

@@ -22,12 +22,17 @@ process MAKE_COMBINATIONS_qpDstat {
     export C=\$(echo "$popC")
     export D=\$(echo "$popD")
 
-    for i in \${C}; do 
-        for j in \${D}; do
-            if [ "\${i}" != "\${j}" ]; then
-            echo -e "\${A}\t\${B}\t\${i}\t\${j}"
-            fi
-        done 
-    done > ${prefix}.ftest.txt
+    # Loop through combinations
+    for i in \${A}; do
+        for j in \${B}; do
+            for k in \${C}; do
+                for l in \${D}; do
+                    if [[ "\${i}" != "\${j}" && "\${i}" != "\${k}" && "\${i}" != "\${l}" && "\${j}" != "\${k}" && "\${j}" != "\${l}" && "\${k}" != "\${l}" ]]; then
+                        echo -e "\${i}\t\${j}\t\${k}\t\${l}"
+                    fi
+                done
+            done
+        done
+    done > "${prefix}.ftest.txt"
     """
 }

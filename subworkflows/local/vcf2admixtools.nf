@@ -1,5 +1,5 @@
 //
-// Run ADMIXTOOLS from a VCF as input
+// Run ADMIXTOOLS from a VCF as input 
 //
 
 /*
