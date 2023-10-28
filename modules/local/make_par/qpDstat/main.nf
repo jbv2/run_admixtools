@@ -19,18 +19,17 @@ process MAKE_PAR_qpDstat {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     
-    def f4 = task.ext.f4mode
+    def f4mode = task.ext.f4 ?: "${params.f4mode}"
 
-    """
-    echo "genotypename: $geno" > ${prefix}.parfile
-    echo "snpname: $snp" >> ${prefix}.parfile 
-    echo "indivname: $ind" >> ${prefix}.parfile
-    echo "popfilename: $combinations" >> ${prefix}.parfile
+"""
+echo "genotypename: $geno" > ${prefix}.parfile
+echo "snpname: $snp" >> ${prefix}.parfile 
+echo "indivname: $ind" >> ${prefix}.parfile
+echo "popfilename: $combinations" >> ${prefix}.parfile
 
-    # Conditionally set poplistname based on f4mode
-    if [ '$f4' == 'YES' ]; then
-        echo "f4mode: YES" >> ${prefix}.parfile
-    fi
-
-    """
+# Explicitly set f4mode to YES if it's 'YES'
+if [ '$f4mode' == 'YES' ]; then
+    echo "f4mode: YES" >> ${prefix}.parfile
+fi
+"""
 }

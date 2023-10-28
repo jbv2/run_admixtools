@@ -21,11 +21,11 @@ process ADMIXTOOLS_qpDstat {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     
-    def f4 = task.ext.f4mode
+    def f4mode = task.ext.f4 ?: "${params.f4mode}"
 
     """
     # Conditionally set poplistname based on f4mode
-    if [ '$f4' == 'YES' ]; then
+    if [ '$f4mode' == 'YES' ]; then
     qpDstat -p $parfile > ${prefix}.f4.test.OUT.log
     else 
     qpDstat -p $parfile > ${prefix}.D.test.OUT.log
