@@ -67,8 +67,16 @@ workflow {
     // Create a channel from the valid input strings
     ch_pops = Channel.fromList(validInputs).collect()
 
-    } else {
-      ch_pops = []
+    } else if ( params.run_qp3Pop ) {
+    // Define a list of input parameters
+    inputParams = [params.popA, params.popB, params.popC]
+
+    // Filter out non-empty parameters
+    validInputs = inputParams.findAll { it }
+
+    // Create a channel from the valid input strings
+    ch_pops = Channel.fromList(validInputs).collect()
+
     }
 
     // Read inputs (VCF) and define name as ID

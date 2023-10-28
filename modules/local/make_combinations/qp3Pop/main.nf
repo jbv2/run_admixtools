@@ -4,7 +4,7 @@ process MAKE_COMBINATIONS_qp3Pop {
 
     input:
     val(meta)
-    tuple val(popA), val(popB), val(popC), val(popD)
+    tuple val(popA), val(popB), val(popC)
     
     output:
     path("*ftest.txt"),   emit: txt
@@ -21,12 +21,12 @@ process MAKE_COMBINATIONS_qp3Pop {
     export B=\$(echo "$popB")
     export C=\$(echo "$popC")
 
-    # Loop through combinations
-    for i in "\${A}"; do
-        for j in "\${B}"; do
-            for k in "\${C}"; do
-                if [[ "\$i" != "\$j" && "\$i" != "\$k" && "\$j" != "\$k" ]]; then
-                    echo -e "\$i\t\$j\t\$k"
+    # Loop through combinations 
+    for i in \${A}; do
+        for j in \${B}; do
+            for k in \${C}; do
+                if [[ "\${i}" != "\${j}" && "\${i}" != "\${k}" && "\${j}" != "\${k}" ]]; then
+                    echo -e "\${i}\t\${j}\t\${k}"
                 fi
             done
         done

@@ -21,14 +21,14 @@ process ADMIXTOOLS_qp3Pop {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     
-    def inbreed = task.ext.f4 ?: "${params.f4mode}"
+    def inbreed = task.ext.f3 ?: "${params.inbreed}"
 
     """
     # Conditionally set poplistname based on f4mode
-    if [ '$f4mode' == 'YES' ]; then
-    qpDstat -p $parfile > ${prefix}.f4.test.OUT.log
+    if [ '$inbreed' == 'YES' ]; then
+    qp3Pop -p $parfile > ${prefix}.f3_admixture.test.OUT.log
     else 
-    qpDstat -p $parfile > ${prefix}.D.test.OUT.log
+    qp3Pop -p $parfile > ${prefix}.f3_outgroup.test.OUT.log
     fi
 
     cat <<-END_VERSIONS > versions.yml
