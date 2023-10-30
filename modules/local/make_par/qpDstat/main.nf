@@ -26,6 +26,7 @@ echo "genotypename: $geno" > ${prefix}.parfile
 echo "snpname: $snp" >> ${prefix}.parfile 
 echo "indivname: $ind" >> ${prefix}.parfile
 echo "popfilename: $combinations" >> ${prefix}.parfile
+echo "printsd:  YES" >> ${prefix}.parfile
 
 # Explicitly set f4mode to YES if it's 'YES'
 if [ '$f4mode' == 'YES' ]; then
