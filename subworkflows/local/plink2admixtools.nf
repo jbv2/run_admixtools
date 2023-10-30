@@ -37,6 +37,7 @@ workflow PLINK2ADMIXTOOLS {
     bim: [meta, bim]
     fam: [meta, fam]
     }
+    
     PLINK2EIGEN(ch_input)
     ch_versions = ch_versions.mix(PLINK2EIGEN.out.versions)
 

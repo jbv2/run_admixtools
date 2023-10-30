@@ -7,15 +7,19 @@
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MAKE_PAR          } from '../../modules/local/make_par/main'
-include { SMARTPCA          } from '../../modules/local/smartpca/main'
-include { FORMAT_EVEC       } from '../../modules/local/format_evec/main'
+include { MAKE_COMBINATIONS_qpDstat } from '../../modules/local/make_combinations/qpDstat/main'
+include { MAKE_COMBINATIONS_qp3Pop  } from '../../modules/local/make_combinations/qp3Pop/main'
+include { MAKE_PAR_qpDstat          } from '../../modules/local/make_par/qpDstat/main'
+include { MAKE_PAR_qp3Pop           } from '../../modules/local/make_par/qp3Pop/main'
+include { ADMIXTOOLS_qpDstat        } from '../../modules/local/admixtools/qpDstat/main'
+include { ADMIXTOOLS_qp3Pop        } from '../../modules/local/admixtools/qp3Pop/main'
 
-workflow EIGEN2SMARTPCA {
+
+workflow EIGEN2ADMIXTOOLS {
 
     take:
     eigenstrat // channel : [ val[meta], [geno], [snp], [ind]]
-    poplist // channel : [ [poplist]]
+    pops // channel : [ val(popA), val(popB). val(popC), val(popD)]
 
     main:
     ch_versions       = Channel.empty()
@@ -29,21 +33,46 @@ workflow EIGEN2SMARTPCA {
     ind: [meta, ind]
     }
 
-    // Make PARFILE   
+    //Make Combinations
+    ch_meta = eigenstrat
+    .map { meta, geno, snp, ind ->
+        meta
+    }
 
-    ch_parfile = MAKE_PAR(ch_input, poplist)
+    if ( params.run_qpDstat ) {
+        
+        MAKE_COMBINATIONS_qpDstat(ch_meta, pops)
+        ch_combinations = MAKE_COMBINATIONS_qpDstat.out.txt
 
-    // Run SMARTPCA
+        // Make PARFILE   
+        MAKE_PAR_qpDstat(ch_input, ch_combinations)
+        ch_parfile = MAKE_PAR_qpDstat.out.parfile
 
-    SMARTPCA(ch_input, MAKE_PAR.out.txt, poplist)
-    ch_versions = ch_versions.mix(SMARTPCA.out.versions)
+        // Run Admixtools
 
-    // Format evec
-    FORMAT_EVEC(SMARTPCA.out.evec)
+        ADMIXTOOLS_qpDstat(ch_input, ch_parfile, ch_combinations)
+        ch_versions = ch_versions.mix(ADMIXTOOLS_qpDstat.out.versions)
+        ch_log = ADMIXTOOLS_qpDstat.out.log
+
+        } else if ( params.run_qp3Pop ) {
+        
+        MAKE_COMBINATIONS_qp3Pop(ch_meta, pops)
+        ch_combinations = MAKE_COMBINATIONS_qp3Pop.out.txt
+
+        // Make PARFILE   
+        MAKE_PAR_qp3Pop(ch_input, ch_combinations)
+        ch_parfile = MAKE_PAR_qp3Pop.out.parfile
+
+        // Run Admixtools
+
+        ADMIXTOOLS_qp3Pop(ch_input, ch_parfile, ch_combinations)
+        ch_versions = ch_versions.mix(ADMIXTOOLS_qp3Pop.out.versions)
+        ch_log = ADMIXTOOLS_qp3Pop.out.log
+
+        }
 
     emit:
-    format_evec = FORMAT_EVEC.out
-    eval        = SMARTPCA.out.eval
-    versions    = ch_versions
+    output   = ch_log
+    versions = ch_versions
 
 }

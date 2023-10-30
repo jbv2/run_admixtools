@@ -33,7 +33,7 @@ nextflow.enable.dsl = 2
 // TODO rename to active: index_reference, filter_bam etc.
 include { VCF2ADMIXTOOLS   } from './subworkflows/local/vcf2admixtools'
 include { PLINK2ADMIXTOOLS } from './subworkflows/local/plink2admixtools'
-//include { EIGEN2ADMIXTOOLS } from './subworkflows/local/eigen2admixtools'
+include { EIGEN2ADMIXTOOLS } from './subworkflows/local/eigen2admixtools'
 
 
 /*
@@ -115,6 +115,24 @@ workflow {
     }
 
     PLINK2ADMIXTOOLS(ch_bed, ch_pops)
+
+    } else if (params.input_type == 'eigenstrat' ) {
+
+    // Read inputs (EIGENSTRAT) and define name as ID
+   ch_geno = Channel.fromFilePairs(params.inputgeno, size: -1)
+    .map {
+        meta, geno ->
+        def baseName = geno.baseName.first()
+        def dirPath = geno.parent.first()
+        def snpPath = "${dirPath}/${baseName}.snp"
+        def indPath = "${dirPath}/${baseName}.ind"
+        def fmeta = [:]
+        // Set meta.id
+        fmeta.id = baseName
+        [fmeta, geno, file(snpPath), file(indPath)]
+    }
+
+    EIGEN2ADMIXTOOLS(ch_geno, ch_pops)
 
     }
 }
