@@ -40,12 +40,14 @@ workflow VCF2ADMIXTOOLS {
     PLINK2EIGEN(PLINK.out.bed, PLINK.out.bim, PLINK.out.fam)
     ch_versions = ch_versions.mix(PLINK2EIGEN.out.versions)
 
-    if ( params.run_qpDstat ) {
-        //Make Combinations
+    //Make Combinations
         ch_meta = PLINK2EIGEN.out.geno
             .map{meta, geno ->
             meta
             }
+
+    if ( params.run_qpDstat ) {
+        
         MAKE_COMBINATIONS_qpDstat(ch_meta, pops)
         ch_combinations = MAKE_COMBINATIONS_qpDstat.out.txt
 
@@ -61,10 +63,7 @@ workflow VCF2ADMIXTOOLS {
 
         } else if ( params.run_qp3Pop ) {
         //Make Combinations
-        ch_meta = PLINK2EIGEN.out.geno
-            .map{meta, geno ->
-            meta
-            }
+
         MAKE_COMBINATIONS_qp3Pop(ch_meta, pops)
         ch_combinations = MAKE_COMBINATIONS_qp3Pop.out.txt
 
