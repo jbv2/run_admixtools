@@ -42,8 +42,8 @@ workflow VCF2ADMIXTOOLS {
 
     if ( params.run_qpDstat ) {
         //Make Combinations
-        ch_meta = vcf
-            .map{meta, vcf ->
+        ch_meta = PLINK2EIGEN.out.geno
+            .map{meta, geno ->
             meta
             }
         MAKE_COMBINATIONS_qpDstat(ch_meta, pops)
@@ -61,8 +61,8 @@ workflow VCF2ADMIXTOOLS {
 
         } else if ( params.run_qp3Pop ) {
         //Make Combinations
-        ch_meta = vcf
-            .map{meta, vcf ->
+        ch_meta = PLINK2EIGEN.out.geno
+            .map{meta, geno ->
             meta
             }
         MAKE_COMBINATIONS_qp3Pop(ch_meta, pops)

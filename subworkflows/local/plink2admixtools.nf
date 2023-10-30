@@ -1,5 +1,5 @@
 //
-// Run SMARTPCA from a bfile as input
+// Run ADMIXTOOLS from a bfile as input
 //
 
 /*
@@ -7,16 +7,24 @@
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { PLINK2EIGEN       } from '../../modules/local/plink2eigen/main'
-include { MAKE_PAR          } from '../../modules/local/make_par/main'
-include { SMARTPCA          } from '../../modules/local/smartpca/main'
-include { FORMAT_EVEC       } from '../../modules/local/format_evec/main'
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT LOCAL MODULES/SUBWORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+include { PLINK2EIGEN               } from '../../modules/local/plink2eigen/main'
+include { MAKE_COMBINATIONS_qpDstat } from '../../modules/local/make_combinations/qpDstat/main'
+include { MAKE_COMBINATIONS_qp3Pop  } from '../../modules/local/make_combinations/qp3Pop/main'
+include { MAKE_PAR_qpDstat          } from '../../modules/local/make_par/qpDstat/main'
+include { MAKE_PAR_qp3Pop           } from '../../modules/local/make_par/qp3Pop/main'
+include { ADMIXTOOLS_qpDstat        } from '../../modules/local/admixtools/qpDstat/main'
+include { ADMIXTOOLS_qp3Pop        } from '../../modules/local/admixtools/qp3Pop/main'
 
-workflow PLINK2SMARTPCA {
+workflow PLINK2ADMIXTOOLS {
 
     take:
     bfile // channel : [ val[meta], [bed], [bim], [fam]]
-    poplist // channel : [ [poplist]]
+    pops // channel : [ val(popA), val(popB). val(popC), val(popD)]
 
     main:
     ch_versions       = Channel.empty()
@@ -32,21 +40,47 @@ workflow PLINK2SMARTPCA {
     PLINK2EIGEN(ch_input)
     ch_versions = ch_versions.mix(PLINK2EIGEN.out.versions)
 
-    // Make PARFILE   
+    if ( params.run_qpDstat ) {
+        //Make Combinations
+        ch_meta = PLINK2EIGEN.out.geno
+            .map{meta, geno ->
+            meta
+            }
+        MAKE_COMBINATIONS_qpDstat(ch_meta, pops)
+        ch_combinations = MAKE_COMBINATIONS_qpDstat.out.txt
 
-    ch_parfile = MAKE_PAR(PLINK2EIGEN.out.geno, PLINK2EIGEN.out.snp, PLINK2EIGEN.out.ind, poplist)
+        // Make PARFILE   
+        MAKE_PAR_qpDstat(PLINK2EIGEN.out.geno, PLINK2EIGEN.out.snp, PLINK2EIGEN.out.ind, ch_combinations)
+        ch_parfile = MAKE_PAR_qpDstat.out.parfile
 
-    // Run SMARTPCA
+        // Run Admixtools
 
-    SMARTPCA(PLINK2EIGEN.out.geno, PLINK2EIGEN.out.snp, PLINK2EIGEN.out.ind, MAKE_PAR.out.txt, poplist)
-    ch_versions = ch_versions.mix(SMARTPCA.out.versions)
+        ADMIXTOOLS_qpDstat(PLINK2EIGEN.out.geno, PLINK2EIGEN.out.snp, PLINK2EIGEN.out.ind, ch_parfile, ch_combinations)
+        ch_versions = ch_versions.mix(ADMIXTOOLS_qpDstat.out.versions)
+        ch_log = ADMIXTOOLS_qpDstat.out.log
 
-    // Format evec
-    FORMAT_EVEC(SMARTPCA.out.evec)
+        } else if ( params.run_qp3Pop ) {
+        ch_meta = PLINK2EIGEN.out.geno
+            .map{meta, geno ->
+            meta
+            }
+        MAKE_COMBINATIONS_qp3Pop(ch_meta, pops)
+        ch_combinations = MAKE_COMBINATIONS_qp3Pop.out.txt
+
+        // Make PARFILE   
+        MAKE_PAR_qp3Pop(PLINK2EIGEN.out.geno, PLINK2EIGEN.out.snp, PLINK2EIGEN.out.ind, ch_combinations)
+        ch_parfile = MAKE_PAR_qp3Pop.out.parfile
+
+        // Run Admixtools
+
+        ADMIXTOOLS_qp3Pop(PLINK2EIGEN.out.geno, PLINK2EIGEN.out.snp, PLINK2EIGEN.out.ind, ch_parfile, ch_combinations)
+        ch_versions = ch_versions.mix(ADMIXTOOLS_qp3Pop.out.versions)
+        ch_log = ADMIXTOOLS_qp3Pop.out.log
+
+        }
 
     emit:
-    format_evec = FORMAT_EVEC.out
-    eval        = SMARTPCA.out.eval
-    versions    = ch_versions
+    output   = ch_log
+    versions = ch_versions
 
 }

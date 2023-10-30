@@ -32,7 +32,7 @@ nextflow.enable.dsl = 2
 
 // TODO rename to active: index_reference, filter_bam etc.
 include { VCF2ADMIXTOOLS   } from './subworkflows/local/vcf2admixtools'
-//include { PLINK2ADMIXTOOLS } from './subworkflows/local/plink2admixtools'
+include { PLINK2ADMIXTOOLS } from './subworkflows/local/plink2admixtools'
 //include { EIGEN2ADMIXTOOLS } from './subworkflows/local/eigen2admixtools'
 
 
@@ -98,5 +98,23 @@ workflow {
 
     VCF2ADMIXTOOLS(ch_vcf, ch_samples, ch_pops)
     
+    } else if (params.input_type == 'plink' ) {
+    
+    // Read inputs (PLINK) and define name as ID
+   ch_bed = Channel.fromFilePairs(params.inputbed, size: -1)
+    .map {
+        meta, bed ->
+        def baseName = bed.baseName.first()
+        def dirPath = bed.parent.first()
+        def bimPath = "${dirPath}/${baseName}.bim"
+        def famPath = "${dirPath}/${baseName}.fam"
+        def fmeta = [:]
+        // Set meta.id
+        fmeta.id = baseName
+        [fmeta, bed, file(bimPath), file(famPath)]
+    }
+
+    PLINK2ADMIXTOOLS(ch_bed, ch_pops)
+
     }
 }
