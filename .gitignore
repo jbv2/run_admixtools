@@ -8,8 +8,6 @@
 .nextflow.log*
 .nextflow/
 
-## ignore workdirw
-work*
 
 ## Ignore test subdirectories from mkmodules
 mkmodules/*/test/results/*
