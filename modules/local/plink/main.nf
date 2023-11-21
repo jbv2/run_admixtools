@@ -18,8 +18,10 @@ process PLINK {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
+    memory=\$(echo "$task.memory" | sed "s# GB#000#")
     plink --vcf $vcf \
         --keep-allele-order \
+        --memory \${memory} \
         $args \
         --make-bed \
         --out ${prefix} 
