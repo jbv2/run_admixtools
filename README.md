@@ -7,6 +7,11 @@ Nextflow pipeline (DSL2) that runs fstatistics with AdmixTools, taking different
 ### Workflow overview
 ![General Workflow](docs/Workflow.png) 
 
+* Consider this tree to set popA - popD for qpDstat:
+  ![General Workflow](docs/qpDstat_combinations.png) 
+* Consider this tree to set popA - popC for qp3Pop:
+  ![General Workflow](docs/qp3Pop_combinations.png) 
+
 ---
 
 
@@ -34,7 +39,7 @@ Nextflow pipeline (DSL2) that runs fstatistics with AdmixTools, taking different
 | [bcftools](https://samtools.github.io/bcftools/) | 1.17 | reheader,view |
 | [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html) | 23.04.2.5870 | nextflow |
 | [plink](https://www.cog-genomics.org/plink/1.9/) | 1.19 ) | plink |
-| [trident](https://www.poseidon-adna.org/#/trident) | v1.4.0.2 | Rscript |
+| [Poseidon](https://www.poseidon-adna.org/#/trident) | v1.4.0.2 | trident |
 | [AdmixTools](https://github.com/DReichLab/AdmixTools) | v651 and v980 | qp3Pop and qpDstat |
 
 \* These commands must be accessible from your `$PATH` (*i.e.* you should be able to invoke them from your command line).  
@@ -65,10 +70,42 @@ nextflow run main.nf -profile eva,archgen,<test_qpDstat,test_qp3Pop>
 ### Usage
 To run `run_admixtools` go to the pipeline directory and execute:
 ```bash
-nextflow run main.nf  --inputVCF <path to VCF input> --inputbed <path to PLINK bed> --inputgeno <Path to EIGENSTRAT geno> --input_type <'vcf','plink','eigenstrat'> --half_call <h> --popA <Vector for populations in A position> --popB <Vector for populations in B position>  --popC <Vector for populations in C position> --popD <Vector for populations in D position>  --run_qpDstat <true,false> --run_qp3Pop <true,false> --f4mode <"YES","NO"> --inbreed <"YES","NO"> --outdir <path to results> --samples <Path to file with new sample names>
+nextflow run main.nf \
+  --inputVCF "<path to VCF input>" \ # Needs --input_type "vcf" --samples and --half_call
+    --samples <Path to file with new sample names> \ # txt file with id famid_id needed when input is VCF.
+    --half_call "<h>" \ # Plink option when VCF to PLINK on how to treat how to deal with '0/.'. See https://www.cog-genomics.org/plink/1.9/input
+  --inputbed "<path to PLINK bed>" \ # Needs input_type = "plink"
+  --inputgeno "<Path to EIGENSTRAT geno>" \ # Needs input_type = "eigenstrat"
+  --input_type <'vcf','plink','eigenstrat'> \ # Select your input type
+  --popA "<Vector for population(s) in A position>" \ # Vector. Example: "CEU YRI"
+  --popB "<Vector for population(s) in B position>"  \ # Vector. Example: "CEU YRI"
+  --popC "<Vector for population(s) in C position>" \ # Vector. Example: "CEU YRI"
+  --popD "<Vector for population(s) in D position>"  \ # Vector. Example: "CEU YRI". Not needed in qp3Pop.
+  --run_qpDstat <'true','false'> \ # Can not be used with --run_qp3Pop. Needs --f4mode
+    --f4mode <"YES","NO"> \ # qpDstat option
+  --run_qp3Pop <'true','false'> \ # Can not be used with --run_qpDstat. Needs --inbreed.
+    --inbreed <"YES","NO"> \ # qp3Pop option
+  --outdir <path to results> \ # Outdir 
 ```
 
-If you have one input type, you don't need to provide the others. 
+* If you have one input type, you don't need to provide the others.
+
+* If you select PLINK as input, `.fam` and `.bim` must be in the same dir as the `.bed` file.
+* If you select EIGENSTRAT as input, `.ind` and `.snp` must be in the same dir as the `.geno` file.
+* If you select VCF as input, provide:
+  * --samples "Two columns text file with the structure: ID FAMID_ID". See `test/reference/new_sample_names.txt` for deatils.
+  * --half_call: Plink option when VCF to PLINK on how to treat how to deal with '0/.'. Default: haploid.
+    * 'haploid'/'h': Treat half-calls as haploid/homozygous (the PLINK 1 file format does not distinguish between the two). This maximizes similarity between the VCF and BCF2 parsers.
+    * 'missing'/'m': Treat half-calls as missing.
+    * 'reference'/'r': Treat the missing part as reference.
+
+You can also copy/rename `test/my_project.config`, replace with your information and run it with:
+
+```bash
+nextflow run main.nf -c </PATH/TO/YOUR/my_projecy.config> -profile my_project_f4 
+```
+
+It can be as easy as you want!
 
 ---
 
@@ -279,4 +316,4 @@ Under the hood `run_admixtools` uses some coding tools, please include the follo
 If you have questions, requests, or bugs to report, please email <judith.vballesteros@gmail.com> 
 
 #### Dev Team
-Judith Ballesteros-Villascán <judith.vballesteros@gmail>
+Judith Ballesteros-Villascán <judith.vballesteros@gmail.com>
