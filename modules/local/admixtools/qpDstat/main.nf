@@ -27,13 +27,13 @@ process ADMIXTOOLS_qpDstat {
     """
     # Conditionally set poplistname based on f4mode
     if [ '$f4mode' == 'YES' ]; then
-    qpDstat -p $parfile > ${prefix}.f4.test.OUT.log \\
-    && echo "PopA PopB PopC PopD f4 stderr Zscore" | tr " " "\t" > ${prefix}.f4.result.tsv \\
-    && grep "result" test.f4.test.OUT.log | tr -s " " | tr " " "\t" | cut -f2,3,4,5,6,7,8 >> ${prefix}.f4.result.tsv
+    qpDstat -p $parfile > ${prefix}.f4.test.OUT.log \
+    && echo "PopA PopB PopC PopD f4 stderr Zscore" | tr " " "\t" > ${prefix}.f4.result.tsv \
+    && grep "result" ${prefix}.f4.test.OUT.log | tr -s " " | tr " " "\t" | cut -f2,3,4,5,6,7,8 >> ${prefix}.f4.result.tsv
     else 
-    qpDstat -p $parfile > ${prefix}.D.test.OUT.log \\
-    && echo "PopA PopB PopC PopD D stderr Zscore" | tr " " "\t" > ${prefix}.D.result.tsv \\
-    && grep "result" test.D.test.OUT.log | tr -s " " | tr " " "\t" | cut -f2,3,4,5,6,7,8 >> ${prefix}.D.result.tsv
+    qpDstat -p $parfile > ${prefix}.D.test.OUT.log \
+    && echo "PopA PopB PopC PopD D stderr Zscore" | tr " " "\t" > ${prefix}.D.result.tsv \
+    && grep "result"${prefix}.D.test.OUT.log | tr -s " " | tr " " "\t" | cut -f2,3,4,5,6,7,8 >> ${prefix}.D.result.tsv
     fi
 
     cat <<-END_VERSIONS > versions.yml
