@@ -33,6 +33,9 @@ process MAKE_COMBINATIONS_qpDstat {
                 done
             done
         done
-    done > "${prefix}.ftest.txt"
+    done > "${prefix}.ftest.tmp"
+
+    Rscript --vanilla $projectDir/docs/combinations.R "${prefix}.ftest.tmp" && rm "${prefix}.ftest.tmp"
+
     """
 }
