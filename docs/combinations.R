@@ -5,7 +5,7 @@ args = commandArgs(trailingOnly=TRUE)
 
 
 ##Debugging
-args[1] <- "./test.ftest.tmp"
+#args[1] <- "./test.ftest.tmp"
 
 ## Passing args to named objects
 combinations <- args[1]
